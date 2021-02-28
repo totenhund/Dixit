@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_navigation"
+    app:startDestination="@id/intro_fragment">
+
+    <fragment
+        android:id="@+id/intro_fragment"
+        android:name="totenhund.com.dixit.intro.IntroFragment"
+        android:label="IntroFragment" >
+        <action
+            android:id="@+id/action_intro_fragment_to_lobby_fragment"
+            app:destination="@id/lobby_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/lobby_fragment"
+        android:name="totenhund.com.dixit.lobby.LobbyFragment"
+        android:label="fragment_lobby"
+        tools:layout="@layout/fragment_lobby" />
+</navigation>
