@@ -15,7 +15,7 @@
     </fragment>
     <fragment
         android:id="@+id/lobby_fragment"
-        android:name="totenhund.com.dixit.lobby.LobbyFragment"
+        android:name="totenhund.com.dixit.lobby.menu.LobbyMenuFragment"
         android:label="fragment_lobby"
-        tools:layout="@layout/fragment_lobby" />
+        tools:layout="@layout/fragment_menu_lobby" />
 </navigation>
