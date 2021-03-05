@@ -25,7 +25,7 @@ class IntroFragment : Fragment() {
             inflater, R.layout.fragment_intro, container, false)
 
         binding.startGameButton.setOnClickListener {
-            val action = IntroFragmentDirections.actionIntroFragmentToLobbyFragment()
+            val action = IntroFragmentDirections.actionIntroFragmentToChoiceLobbyFragment()
             findNavController(this).navigate(action)
         }
 

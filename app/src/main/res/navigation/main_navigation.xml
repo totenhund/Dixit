@@ -10,12 +10,19 @@
         android:name="totenhund.com.dixit.intro.IntroFragment"
         android:label="IntroFragment" >
         <action
-            android:id="@+id/action_intro_fragment_to_lobby_fragment"
-            app:destination="@id/lobby_fragment" />
+            android:id="@+id/action_intro_fragment_to_choiceLobbyFragment"
+            app:destination="@id/choiceLobbyFragment" />
     </fragment>
     <fragment
-        android:id="@+id/lobby_fragment"
-        android:name="totenhund.com.dixit.lobby.menu.LobbyMenuFragment"
-        android:label="fragment_lobby"
-        tools:layout="@layout/fragment_menu_lobby" />
+        android:id="@+id/choiceLobbyFragment"
+        android:name="totenhund.com.dixit.lobby.choice.ChoiceLobbyFragment"
+        android:label="ChoiceLobbyFragment" >
+        <action
+            android:id="@+id/action_choiceLobbyFragment_to_creationLobbyFragment"
+            app:destination="@id/creationLobbyFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/creationLobbyFragment"
+        android:name="totenhund.com.dixit.lobby.creation.CreationLobbyFragment"
+        android:label="CreationLobbyFragment" />
 </navigation>
