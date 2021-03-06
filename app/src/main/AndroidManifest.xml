@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="totenhund.com.dixit">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".logs.PusherApplication"
         android:allowBackup="true"

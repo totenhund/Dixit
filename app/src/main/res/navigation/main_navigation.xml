@@ -20,9 +20,20 @@
         <action
             android:id="@+id/action_choiceLobbyFragment_to_creationLobbyFragment"
             app:destination="@id/creationLobbyFragment" />
+        <action
+            android:id="@+id/action_choiceLobbyFragment_to_gameFragment"
+            app:destination="@id/gameFragment" />
     </fragment>
     <fragment
         android:id="@+id/creationLobbyFragment"
         android:name="totenhund.com.dixit.lobby.creation.CreationLobbyFragment"
-        android:label="CreationLobbyFragment" />
+        android:label="CreationLobbyFragment" >
+        <action
+            android:id="@+id/action_creationLobbyFragment_to_gameFragment"
+            app:destination="@id/gameFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/gameFragment"
+        android:name="totenhund.com.dixit.game.GameFragment"
+        android:label="GameFragment" />
 </navigation>

@@ -36,7 +36,8 @@ class ChoiceLobbyFragment : Fragment() {
         val button = Button(context)
         button.text= "Lobby"
         button.setOnClickListener {
-            Toast.makeText(context, "Lobby joined", Toast.LENGTH_SHORT).show()
+            val action = ChoiceLobbyFragmentDirections.actionChoiceLobbyFragmentToGameFragment()
+            findNavController(this).navigate(action)
         }
         binding.listLobbiesLayout.addView(button)
     }
