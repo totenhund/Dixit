@@ -21,19 +21,48 @@
             android:id="@+id/action_choiceLobbyFragment_to_creationLobbyFragment"
             app:destination="@id/creationLobbyFragment" />
         <action
-            android:id="@+id/action_choiceLobbyFragment_to_gameFragment"
-            app:destination="@id/gameFragment" />
+            android:id="@+id/action_choiceLobbyFragment_to_noratorPlayerFragment"
+            app:destination="@id/noratorPlayerFragment" />
+        <action
+            android:id="@+id/action_choiceLobbyFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
     </fragment>
     <fragment
         android:id="@+id/creationLobbyFragment"
         android:name="totenhund.com.dixit.lobby.creation.CreationLobbyFragment"
         android:label="CreationLobbyFragment" >
         <action
-            android:id="@+id/action_creationLobbyFragment_to_gameFragment"
-            app:destination="@id/gameFragment" />
+            android:id="@+id/action_creationLobbyFragment_to_noratorPlayerFragment"
+            app:destination="@id/noratorPlayerFragment" />
+        <action
+            android:id="@+id/action_creationLobbyFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
     </fragment>
     <fragment
         android:id="@+id/gameFragment"
         android:name="totenhund.com.dixit.game.GameFragment"
-        android:label="GameFragment" />
+        android:label="GameFragment" >
+        <action
+            android:id="@+id/action_gameFragment_to_noratorPlayerFragment"
+            app:destination="@id/noratorPlayerFragment" />
+        <action
+            android:id="@+id/action_gameFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/noratorPlayerFragment"
+        android:name="totenhund.com.dixit.game.norator.NoratorPlayerFragment"
+        android:label="NoratorPlayerFragment" >
+        <action
+            android:id="@+id/action_noratorPlayerFragment_to_gameFragment"
+            app:destination="@id/gameFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/playerFragment"
+        android:name="totenhund.com.dixit.game.player.PlayerFragment"
+        android:label="PlayerFragment" >
+        <action
+            android:id="@+id/action_playerFragment_to_gameFragment"
+            app:destination="@id/gameFragment" />
+    </fragment>
 </navigation>

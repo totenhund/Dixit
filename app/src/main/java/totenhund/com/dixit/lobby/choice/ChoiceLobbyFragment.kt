@@ -36,7 +36,7 @@ class ChoiceLobbyFragment : Fragment() {
         val button = Button(context)
         button.text= "Lobby"
         button.setOnClickListener {
-            val action = ChoiceLobbyFragmentDirections.actionChoiceLobbyFragmentToGameFragment()
+            val action = ChoiceLobbyFragmentDirections.actionChoiceLobbyFragmentToNoratorPlayerFragment()
             findNavController(this).navigate(action)
         }
         binding.listLobbiesLayout.addView(button)

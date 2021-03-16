@@ -4,13 +4,14 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: "androidx.navigation.safeargs.kotlin"
 
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.1"
 
     defaultConfig {
         applicationId "totenhund.com.dixit"
-        minSdkVersion 23
+        minSdkVersion 25
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -89,4 +90,10 @@ dependencies {
 
     implementation("io.coil-kt:coil:1.0.0-rc3")
 
+    // viewPager2
+    implementation "androidx.viewpager2:viewpager2:1.0.0"
+
+    // json prc
+    implementation 'com.segment.retrofit.jsonrpc:jsonrpc:1.0.0-SNAPSHOT'
 }
+
