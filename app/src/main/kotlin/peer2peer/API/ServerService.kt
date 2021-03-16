@@ -6,15 +6,22 @@ import game.peer2peer.GameState
 class ServerService(val playerAlias: String) {
     var gameController: GameController = GameController
 
-    fun createGameState(playersConnectors: Map<String, String>) {
+    fun createGameState(
+        playersConnectors: Map<String, String>,
+    ) {
         GameController.createGameState(playersConnectors)
     }
 
-    fun synchronize(gameState: GameState) {
+    fun synchronize(
+        gameState: GameState,
+    ) {
         GameController.updateGameState(gameState, playerAlias)
     }
 
-    fun reconnect(playerAlias: String, playerConnector: String) {
+    fun reconnect(
+        playerAlias: String,
+        playerConnector: String,
+    ) {
         GameController.gameState
     }
 
