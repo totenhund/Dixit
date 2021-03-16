@@ -1,6 +1,5 @@
 package game.peer2peer.API
 
-import com.googlecode.jsonrpc4j.JsonRpcHttpClient
 import game.peer2peer.GameState
 import java.net.URL
 

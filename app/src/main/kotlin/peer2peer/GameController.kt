@@ -27,7 +27,7 @@ object GameController {
                 playerState.hand.add(cardsTaken++)
             players[alias] = playerState
         }
-        gameState = GameState(
+        this.gameState = GameState(
             numberOfPlayers = numberOfPlayers,
             players = players,
             narratorAlias = narratorAlias,
@@ -43,15 +43,21 @@ object GameController {
     }
 
     fun updateGameState(gameState: GameState, playerAlias: String) {
-        val curGameState = checkNotNull(GameController.gameState)
-        assert(curGameState.players[playerAlias]!!.status == PlayerStatus.SYNCHRONIZED
-                && curGameState != gameState) { "Desynchronization" }
-        GameController.gameState = gameState
+        val curGameState: GameState = checkNotNull(this.gameState)
+        if (gameState.gameStage != GameStage.SYNCHRONISATION)
+            throw Exception()
+        check(
+            curGameState.players[playerAlias]!!.status == PlayerStatus.SYNCHRONIZED
+                    && curGameState != gameState
+        ) { "Desynchronization" }
+        this.gameState = gameState
+        this.gameState!!.players[playerAlias]!!.status = PlayerStatus.SYNCHRONIZED
+        this.gameState!!.gameStage = GameStage.ASSOCIATION
     }
 
     fun reconnect(playerAlias: String, playerConnector: String) {
-        val gameState = checkNotNull(gameState)
-        assert(gameState.players[playerAlias]!!.status == PlayerStatus.DEAD) {
+        val gameState: GameState = checkNotNull(this.gameState)
+        check(gameState.players[playerAlias]!!.status == PlayerStatus.DEAD) {
             "Only dead peer could reconnect"
         }
         gameState.players[playerAlias]!!.connector = playerConnector
@@ -62,7 +68,7 @@ object GameController {
         description: String,
         cardIndex: Int,
     ) {
-        val gameState = checkNotNull(gameState)
+        val gameState: GameState = checkNotNull(this.gameState)
         if (gameState.gameStage == GameStage.ASSOCIATION)
             throw Exception() // toDo
         gameState.narratorDescription = description
@@ -73,10 +79,18 @@ object GameController {
         userAlias: String,
         cardIndex: Int,
     ) {
-        val gameState = checkNotNull(gameState)
+        val gameState: GameState = checkNotNull(this.gameState)
         if (gameState.gameStage == GameStage.ASSOCIATION)
             throw Exception() // toDo
         gameState.players[userAlias]!!.cardToDescription = cardIndex
+        var changeState: Boolean = true
+        for ((alias, playerState) in gameState.players) {
+            if (playerState.cardToDescription == null) {
+                changeState = false;
+            }
+        }
+        if (changeState)
+            gameState.gameStage = GameStage.GUESS
     }
 
 
@@ -84,16 +98,30 @@ object GameController {
         userAlias: String,
         cardIndex: Int,
     ) {
-        val gameState = checkNotNull(gameState)
+        val gameState: GameState = checkNotNull(this.gameState)
         if (gameState.gameStage == GameStage.GUESS)
             throw Exception() // toDo
         gameState.players[userAlias]!!.guess = cardIndex
+        var changeState: Boolean = true
+        for ((alias, playerState) in gameState.players) {
+            if (alias == gameState.narratorAlias)
+                continue
+            if (playerState.guess == null) {
+                changeState = false;
+            }
+        }
+        if (changeState) {
+            this.calculateScores()
+            gameState.gameStage = GameStage.SYNCHRONISATION
+        }
     }
 
     fun broadcastGameState(
         senderAlias: String,
     ) {
-        val gameState = checkNotNull(gameState)
+        val gameState: GameState = checkNotNull(this.gameState)
+        if (gameState.gameStage != GameStage.SYNCHRONISATION)
+            throw Exception() // toDO
         for ((playerAlias, playerState) in gameState.players) {
             if (playerAlias == senderAlias || playerState.status == PlayerStatus.DEAD)
                 continue
@@ -107,7 +135,9 @@ object GameController {
         description: String,
         cardIndex: Int,
     ) {
-        val gameState = checkNotNull(gameState)
+        val gameState = checkNotNull(this.gameState)
+        if (gameState.gameStage != GameStage.ASSOCIATION)
+            throw Exception() // toDO
         for ((playerAlias, playerState) in gameState.players) {
             if (playerAlias == senderAlias || playerState.status == PlayerStatus.DEAD)
                 continue
@@ -120,7 +150,9 @@ object GameController {
         senderAlias: String,
         cardIndex: Int,
     ) {
-        val gameState = checkNotNull(gameState)
+        val gameState = checkNotNull(this.gameState)
+        if (gameState.gameStage != GameStage.ASSOCIATION)
+            throw Exception() // toDO
         for ((playerAlias, playerState) in gameState.players) {
             if (playerAlias == senderAlias || playerState.status == PlayerStatus.DEAD)
                 continue
@@ -133,12 +165,51 @@ object GameController {
         senderAlias: String,
         cardIndex: Int,
     ) {
-        val gameState = checkNotNull(gameState)
+        val gameState = checkNotNull(this.gameState)
+        if (gameState.gameStage != GameStage.GUESS)
+            throw Exception() // toDO
         for ((playerAlias, playerState) in gameState.players) {
             if (playerAlias == senderAlias || playerState.status == PlayerStatus.DEAD)
                 continue
             val clientService: ClientService = ClientService.getInstance(playerState.connector)
             clientService.sendGuess(senderAlias, cardIndex)
+        }
+    }
+
+    private fun calculateScores() {
+        val gameState: GameState = checkNotNull(gameState)
+        val guessedFor: MutableMap<Int, Int> = mutableMapOf()
+        //Update score of narrator and check if he or she failed
+        val narratorCard: Int = gameState.players[gameState.narratorAlias]!!.cardToDescription!!
+        val narratorFailed: Boolean
+        if (guessedFor[narratorCard] == null || guessedFor[narratorCard] == gameState.numberOfPlayers - 1) {
+            narratorFailed = true
+        } else {
+            narratorFailed = false
+            gameState.players[gameState.narratorAlias]!!.score += 3
+        }
+        for ((alias, playerState) in gameState.players) {
+            if (alias == gameState.narratorAlias)
+                continue
+            val guess = checkNotNull(playerState.guess)
+            if (guessedFor[guess] == null) {
+                guessedFor[guess] = 1
+            } else {
+                guessedFor[guess] = guessedFor[guess]!! + 1
+            }
+
+            if (narratorFailed) {
+                playerState.score += 2
+            } else if (guess == narratorCard) {
+                playerState.score += 3
+            }
+        }
+        for ((alias, playerState) in gameState.players) {
+            if (alias == gameState.narratorAlias)
+                continue
+            val cardPlayed = checkNotNull(playerState.cardToDescription)
+            if (guessedFor[cardPlayed] != null)
+                playerState.score += guessedFor[cardPlayed]!!
         }
     }
 }
