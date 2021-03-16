@@ -1,6 +1,7 @@
 package game.peer2peer
 
 import game.peer2peer.API.ClientService
+import peer2peer.GameLogic.GameLogic
 
 object GameController {
     var gameState: GameState? = null
@@ -50,9 +51,13 @@ object GameController {
             curGameState.players[playerAlias]!!.status == PlayerStatus.SYNCHRONIZED
                     && curGameState != gameState
         ) { "Desynchronization" }
-        this.gameState = gameState
-        this.gameState!!.players[playerAlias]!!.status = PlayerStatus.SYNCHRONIZED
-        this.gameState!!.gameStage = GameStage.ASSOCIATION
+        if (this.gameState!!.players[playerAlias]!!.status != PlayerStatus.SYNCHRONIZED) {
+            this.gameState = gameState
+            this.gameState!!.players[playerAlias]!!.status = PlayerStatus.SYNCHRONIZED
+            this.gameState!!.gameStage = GameStage.ASSOCIATION
+            val gameLogic = GameLogic
+            gameLogic.startRound()
+        }
     }
 
     fun reconnect(playerAlias: String, playerConnector: String) {
@@ -73,6 +78,8 @@ object GameController {
             throw Exception() // toDo
         gameState.narratorDescription = description
         gameState.players[gameState.narratorAlias]!!.cardToDescription = cardIndex
+        val gameLogic = GameLogic
+        gameLogic.descriptionReceived()
     }
 
     fun updatePlayerCardToDescription(
@@ -89,8 +96,11 @@ object GameController {
                 changeState = false;
             }
         }
-        if (changeState)
+        if (changeState) {
             gameState.gameStage = GameStage.GUESS
+            val gameLogic = GameLogic
+            gameLogic.cardsToDescriptionReceived()
+        }
     }
 
 
@@ -113,6 +123,8 @@ object GameController {
         if (changeState) {
             this.calculateScores()
             gameState.gameStage = GameStage.SYNCHRONISATION
+            val gameLogic = GameLogic
+            gameLogic.guessesReceived()
         }
     }
 
