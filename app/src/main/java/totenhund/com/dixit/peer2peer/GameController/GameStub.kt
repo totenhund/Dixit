@@ -7,7 +7,7 @@ import kotlin.random.Random
 
 object GameStub {
     val gameController = GameController
-    val playerAlias = GameLogic.getInstance().playerAlias
+    val playerAlias = GameLogic.instance().playerAlias
 
     init {
         this.waitStartRound()

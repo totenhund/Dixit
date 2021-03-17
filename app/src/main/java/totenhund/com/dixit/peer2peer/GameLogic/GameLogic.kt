@@ -12,13 +12,10 @@ class GameLogic private constructor(): Serializable{
     var event: GameEvent = GameEvent.WAIT_START_ROUND
 
     companion object {
-        private var instance: GameLogic? = null
+        private val instance: GameLogic by lazy(LazyThreadSafetyMode.PUBLICATION) { GameLogic() }
 
-        fun getInstance(): GameLogic{
-            if(instance == null){
-                instance = GameLogic()
-            }
-            return instance!!
+        fun instance(): GameLogic{
+            return instance
         }
     }
 

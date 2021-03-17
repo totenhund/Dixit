@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import totenhund.com.dixit.R
@@ -37,7 +36,7 @@ class ChoiceLobbyFragment : Fragment() {
         val button = Button(context)
         button.text= "Lobby"
         button.setOnClickListener {
-            var gameLogic: GameLogic = GameLogic.getInstance()
+            var gameLogic: GameLogic = GameLogic.instance()
             gameLogic.playerAlias = "ahahah"
             val action = ChoiceLobbyFragmentDirections.actionChoiceLobbyFragmentToNoratorPlayerFragment(gameLogic)
             findNavController(this).navigate(action)
