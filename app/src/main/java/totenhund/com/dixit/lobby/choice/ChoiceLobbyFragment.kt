@@ -37,7 +37,7 @@ class ChoiceLobbyFragment : Fragment() {
         val button = Button(context)
         button.text= "Lobby"
         button.setOnClickListener {
-            var gameLogic: GameLogic = GameLogic
+            var gameLogic: GameLogic = GameLogic.getInstance()
             gameLogic.playerAlias = "ahahah"
             val action = ChoiceLobbyFragmentDirections.actionChoiceLobbyFragmentToNoratorPlayerFragment(gameLogic)
             findNavController(this).navigate(action)

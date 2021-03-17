@@ -54,7 +54,7 @@ object GameController {
 
     fun finishStage() {
         val gameState: GameState = checkNotNull(this.gameState)
-        val gameLogic = GameLogic
+        val gameLogic = GameLogic.getInstance()
         when (gameState.gameStage) {
             GameStage.SYNCHRONIZATION -> {
                 gameState.gameStage = GameStage.ASSOCIATION
@@ -113,7 +113,7 @@ object GameController {
     }
 
     fun updateGameState(gameState: GameState, senderAlias: String) {
-        val playerAlias: String = GameLogic.playerAlias
+        val playerAlias: String = GameLogic.getInstance().playerAlias
         var curGameState: GameState = checkNotNull(this.gameState)
         if (curGameState.gameStage != GameStage.SYNCHRONIZATION)
             throw Exception()
@@ -146,7 +146,7 @@ object GameController {
             throw Exception()
         gameState.narratorDescription = description
         gameState.players[gameState.narratorAlias]!!.cardToDescription = cardIndex
-        val gameLogic = GameLogic
+        val gameLogic = GameLogic.getInstance()
         gameLogic.descriptionReceived()
     }
 
@@ -154,7 +154,7 @@ object GameController {
         senderAlias: String,
         cardIndex: Int,
     ) {
-        val playerAlias: String = GameLogic.playerAlias
+        val playerAlias: String = GameLogic.getInstance().playerAlias
         val gameState: GameState = checkNotNull(this.gameState)
         if (gameState.gameStage == GameStage.ASSOCIATION)
             throw Exception()
@@ -176,7 +176,7 @@ object GameController {
         senderAlias: String,
         cardIndex: Int,
     ) {
-        val playerAlias: String = GameLogic.playerAlias
+        val playerAlias: String = GameLogic.getInstance().playerAlias
         val gameState: GameState = checkNotNull(this.gameState)
         gameState.players[senderAlias]!!.guess = cardIndex
         var stageFinished = true
@@ -211,7 +211,7 @@ object GameController {
 
     fun broadcastGameState(
     ) {
-        val playerAlias: String = GameLogic.playerAlias
+        val playerAlias: String = GameLogic.getInstance().playerAlias
         val gameState: GameState = checkNotNull(this.gameState)
         if (gameState.gameStage != GameStage.SYNCHRONIZATION)
             throw Exception()
