@@ -1,6 +1,6 @@
 package game.peer2peer
 
-import peer2peer.GameLogic.GameLogic
+import totenhund.com.dixit.peer2peer.GameLogic.GameLogic
 
 object GameController {
     var gameState: GameState? = null

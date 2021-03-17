@@ -1,4 +1,4 @@
-package peer2peer.GameLogic
+package totenhund.com.dixit.peer2peer.GameLogic
 
 enum class GameEvent {
     SEND_DESCRIPTION,

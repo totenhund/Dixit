@@ -11,6 +11,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import totenhund.com.dixit.R
 import totenhund.com.dixit.databinding.FragmentChoiceLobbyBinding
+import totenhund.com.dixit.peer2peer.GameLogic.GameLogic
 
 
 class ChoiceLobbyFragment : Fragment() {
@@ -36,7 +37,9 @@ class ChoiceLobbyFragment : Fragment() {
         val button = Button(context)
         button.text= "Lobby"
         button.setOnClickListener {
-            val action = ChoiceLobbyFragmentDirections.actionChoiceLobbyFragmentToNoratorPlayerFragment()
+            var gameLogic: GameLogic = GameLogic
+            gameLogic.playerAlias = "ahahah"
+            val action = ChoiceLobbyFragmentDirections.actionChoiceLobbyFragmentToNoratorPlayerFragment(gameLogic)
             findNavController(this).navigate(action)
         }
         binding.listLobbiesLayout.addView(button)

@@ -2,7 +2,7 @@ package peer2peer.GameController
 
 import game.peer2peer.GameController
 import game.peer2peer.GameState
-import peer2peer.GameLogic.GameLogic
+import totenhund.com.dixit.peer2peer.GameLogic.GameLogic
 import kotlin.random.Random
 
 object GameStub {
@@ -10,7 +10,7 @@ object GameStub {
     val playerAlias = GameLogic.playerAlias
 
     init {
-        this.waitStartRound()
+//        this.waitStartRound()
     }
 
     fun broadcastNarratorDescription(

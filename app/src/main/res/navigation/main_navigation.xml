@@ -22,7 +22,8 @@
             app:destination="@id/creationLobbyFragment" />
         <action
             android:id="@+id/action_choiceLobbyFragment_to_noratorPlayerFragment"
-            app:destination="@id/noratorPlayerFragment" />
+            app:destination="@id/noratorPlayerFragment">
+        </action>
         <action
             android:id="@+id/action_choiceLobbyFragment_to_playerFragment"
             app:destination="@id/playerFragment" />
@@ -56,6 +57,10 @@
         <action
             android:id="@+id/action_noratorPlayerFragment_to_gameFragment"
             app:destination="@id/gameFragment" />
+        <argument
+            android:name="gameLogic"
+            app:argType="totenhund.com.dixit.peer2peer.GameLogic.GameLogic" />
+
     </fragment>
     <fragment
         android:id="@+id/playerFragment"

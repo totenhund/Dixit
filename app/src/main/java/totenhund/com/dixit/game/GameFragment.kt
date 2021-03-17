@@ -62,6 +62,7 @@ class GameFragment : Fragment() {
             inflater, R.layout.fragment_game, container, false
         )
 
+        
 
         viewModelFactory = GameViewModelFactory(activity!!.application)
         gameViewModel = ViewModelProvider(this, viewModelFactory)
