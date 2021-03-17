@@ -5,11 +5,22 @@ import game.peer2peer.GameState
 import peer2peer.GameController.GameStub
 import java.io.Serializable
 
-class GameLogic: Serializable{
+class GameLogic private constructor(): Serializable{
     var playerAlias: String = "playerA"
     private val gameController: GameController = GameController
     private val gameStub = GameStub
     var event: GameEvent = GameEvent.WAIT_START_ROUND
+
+    companion object {
+        var instance: GameLogic? = null
+
+        fun instance(): GameLogic{
+            if(instance == null){
+                instance = GameLogic()
+            }
+            return instance!!
+        }
+    }
 
     fun sendDescriptionToTheCard(
         description: String,
