@@ -2,7 +2,6 @@ package peer2peer.GameLogic
 
 import game.peer2peer.GameController
 import game.peer2peer.GameState
-import game.peer2peer.PlayerState
 
 object GameLogic {
     var playerAlias: String
@@ -11,8 +10,7 @@ object GameLogic {
         }
         set(value) {}
     private val gameController: GameController = GameController
-    private var event: GameEvent = GameEvent.WAIT_START_ROUND
-    private var playerState: PlayerState? = null
+    var event: GameEvent = GameEvent.WAIT_START_ROUND
 
     fun sendDescriptionToTheCard(
         description: String,
@@ -86,6 +84,10 @@ object GameLogic {
         check(this.event == GameEvent.WAIT_GUESSES)
         val gameState: GameState = checkNotNull(this.gameController.gameState)
         this.event = GameEvent.WAIT_START_ROUND
-        this.gameController.broadcastGameState(playerAlias)
+        this.gameController.broadcastGameState()
+    }
+
+    fun getGameState(): GameState {
+        return this.gameController.gameState!!
     }
 }
