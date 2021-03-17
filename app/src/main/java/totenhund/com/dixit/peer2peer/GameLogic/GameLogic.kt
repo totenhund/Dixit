@@ -3,8 +3,9 @@ package totenhund.com.dixit.peer2peer.GameLogic
 import game.peer2peer.GameController
 import game.peer2peer.GameState
 import peer2peer.GameController.GameStub
+import java.io.Serializable
 
-object GameLogic {
+class GameLogic: Serializable{
     var playerAlias: String = "playerA"
     private val gameController: GameController = GameController
     private val gameStub = GameStub
