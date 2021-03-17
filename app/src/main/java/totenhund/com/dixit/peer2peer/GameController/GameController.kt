@@ -62,9 +62,11 @@ object GameController {
                     playerState.status = PlayerStatus.SYNCHRONIZED
                 }
                 gameLogic.startRound()
+                gameState.gameStage = GameStage.ASSOCIATION
             }
             GameStage.ASSOCIATION -> {
                 gameLogic.cardsToDescriptionReceived()
+                gameState.gameStage = GameStage.GUESS
             }
             GameStage.GUESS -> {
                 gameState.gameStage = GameStage.ASSOCIATION
@@ -94,6 +96,7 @@ object GameController {
                 }
                 gameLogic.guessesReceived()
                 this.broadcastGameState()
+                gameState.gameStage = GameStage.SYNCHRONIZATION
             }
         }
     }
