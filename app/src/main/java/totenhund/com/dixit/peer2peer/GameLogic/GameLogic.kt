@@ -2,6 +2,7 @@ package peer2peer.GameLogic
 
 import game.peer2peer.GameController
 import game.peer2peer.GameState
+import peer2peer.GameController.GameStub
 
 object GameLogic {
     var playerAlias: String
@@ -10,6 +11,7 @@ object GameLogic {
         }
         set(value) {}
     private val gameController: GameController = GameController
+    private val gameStub = GameStub
     var event: GameEvent = GameEvent.WAIT_START_ROUND
 
     fun sendDescriptionToTheCard(
@@ -19,8 +21,7 @@ object GameLogic {
         check(this.event == GameEvent.SEND_DESCRIPTION)
         val gameState: GameState = checkNotNull(this.gameController.gameState)
         check(gameState.narratorAlias == playerAlias)
-        this.gameController.broadcastNarratorDescription(
-            senderAlias = playerAlias,
+        this.gameStub.broadcastNarratorDescription(
             description = description,
             cardIndex = cardIndex
         )
@@ -33,8 +34,7 @@ object GameLogic {
         check(this.event == GameEvent.SEND_CARD_TO_DESCRIPTION)
         val gameState: GameState = checkNotNull(this.gameController.gameState)
         check(gameState.narratorAlias != playerAlias)
-        this.gameController.broadcastCardToDescription(
-            senderAlias = playerAlias,
+        this.gameStub.broadcastCardToDescription(
             cardIndex = cardIndex
         )
         this.event = GameEvent.WAIT_CARDS_TO_DESCRIPTION
@@ -46,8 +46,7 @@ object GameLogic {
         check(this.event == GameEvent.SEND_GUESS)
         val gameState: GameState = checkNotNull(this.gameController.gameState)
         check(gameState.narratorAlias != playerAlias)
-        this.gameController.broadcastGuess(
-            senderAlias = playerAlias,
+        this.gameStub.broadcastGuess(
             cardIndex = cardIndex
         )
         this.event = GameEvent.WAIT_GUESSES
@@ -84,7 +83,7 @@ object GameLogic {
         check(this.event == GameEvent.WAIT_GUESSES)
         val gameState: GameState = checkNotNull(this.gameController.gameState)
         this.event = GameEvent.WAIT_START_ROUND
-        this.gameController.broadcastGameState()
+        this.gameStub.waitStartRound()
     }
 
     fun getGameState(): GameState {
