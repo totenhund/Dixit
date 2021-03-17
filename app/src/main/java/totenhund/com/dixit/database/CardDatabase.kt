@@ -23,8 +23,10 @@ abstract class CardDatabase : RoomDatabase() {
                         context.applicationContext,
                         CardDatabase::class.java,
                         "card_database"
-                ).build()
-
+                ).createFromAsset("card_database")
+                 .allowMainThreadQueries()
+                 .fallbackToDestructiveMigration()
+                 .build()
 
     }
 
