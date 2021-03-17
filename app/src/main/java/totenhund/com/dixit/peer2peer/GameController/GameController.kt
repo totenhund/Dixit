@@ -117,11 +117,6 @@ object GameController {
         var curGameState: GameState = checkNotNull(this.gameState)
         if (curGameState.gameStage != GameStage.SYNCHRONIZATION)
             throw Exception()
-        check(
-            curGameState != gameState
-                    && curGameState.players[playerAlias]!!.status == PlayerStatus.SYNCHRONIZED
-                    && curGameState.players[senderAlias]!!.status == PlayerStatus.SYNCHRONIZED
-        ) { "Desynchronization" }
         this.gameState = gameState
         curGameState = checkNotNull(this.gameState)
         curGameState.players[playerAlias]!!.passedSynchronization = true

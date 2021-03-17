@@ -10,7 +10,7 @@ object GameStub {
     val playerAlias = GameLogic.getInstance().playerAlias
 
     init {
-//        this.waitStartRound()
+        this.waitStartRound()
     }
 
     fun broadcastNarratorDescription(
