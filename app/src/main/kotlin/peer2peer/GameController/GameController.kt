@@ -9,16 +9,20 @@ object GameController {
             field = value
         }
 
-    fun createGameState(playersConnectors: Map<String, String>) { //toDo
-        val numberOfPlayers: Int = playersConnectors.size
+    init {
+        createGameState(listOf("playerA", "playerB", "playerC"))
+    }
+
+    fun createGameState(playerAliases: List<String>) { //toDo
+        val numberOfPlayers: Int = playerAliases.size
         val players: MutableMap<String, PlayerState> = mutableMapOf()
-        val narratorAlias: String = playersConnectors.keys.first()
+        val narratorAlias: String = playerAliases[0]
         val gameStage: GameStage = GameStage.SYNCHRONIZATION
         val handSize = 4
         var cardsTaken = 0
         val descriptionTime = 180
         val guessTime = 120
-        for ((alias, connector) in playersConnectors) {
+        for (alias in playerAliases) {
             val playerState = PlayerState(
                 hand = mutableListOf(),
                 score = 0,
@@ -46,7 +50,6 @@ object GameController {
             guessDeadline = null,
             guessTime = guessTime
         )
-        this.broadcastGameState()
     }
 
     fun finishStage() {
@@ -74,7 +77,6 @@ object GameController {
                         playerState.hand.add(gameState.cardsTaken++)
                     }
                 }
-                //toDo refactor
                 var narratorFound = false
                 var narratorChanged = false
                 for ((alias, playerState) in gameState.players) {
@@ -149,14 +151,15 @@ object GameController {
     }
 
     fun updatePlayerCardToDescription(
-        userAlias: String,
+        senderAlias: String,
         cardIndex: Int,
     ) {
         val playerAlias: String = GameLogic.playerAlias
         val gameState: GameState = checkNotNull(this.gameState)
         if (gameState.gameStage == GameStage.ASSOCIATION)
             throw Exception()
-        gameState.players[userAlias]!!.cardToDescription = cardIndex
+        gameState.players[senderAlias]!!.cardToDescription = cardIndex
+        gameState.players[senderAlias]!!.hand.remove(cardIndex)
         var stageFinished = true
         for ((alias, playerState) in gameState.players) {
             if (playerState.cardToDescription == null) {
@@ -194,11 +197,15 @@ object GameController {
         senderAlias: String,
     ) {
         val gameState: GameState = checkNotNull(this.gameState)
-        for ((playerAlias, playerState) in gameState.players) {
+        /*for ((playerAlias, playerState) in gameState.players) {
             if (playerAlias == senderAlias || playerState.status == PlayerStatus.DEAD)
                 continue
             //val clientService: ClientService = ClientService.getInstance(playerState.connector)
             //clientService.sendGameState(gameState)
+        }*/
+        for ((playerAlias, playerState) in gameState.players) {
+            playerState.finishedStage = true
+            this.receiveFinishStage(playerAlias)
         }
     }
 
