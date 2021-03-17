@@ -12,9 +12,9 @@ class GameLogic private constructor(): Serializable{
     var event: GameEvent = GameEvent.WAIT_START_ROUND
 
     companion object {
-        var instance: GameLogic? = null
+        private var instance: GameLogic? = null
 
-        fun instance(): GameLogic{
+        fun getInstance(): GameLogic{
             if(instance == null){
                 instance = GameLogic()
             }
