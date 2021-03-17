@@ -1,7 +1,7 @@
 package game.peer2peer
 
 enum class GameStage {
-    SYNCHRONISATION,
+    SYNCHRONIZATION,
     ASSOCIATION,
     GUESS,
 }

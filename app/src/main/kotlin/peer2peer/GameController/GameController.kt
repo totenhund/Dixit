@@ -1,32 +1,37 @@
 package game.peer2peer
 
-import game.peer2peer.API.ClientService
 import peer2peer.GameLogic.GameLogic
 
 object GameController {
     var gameState: GameState? = null
+        get() = field
+        private set(value) {
+            field = value
+        }
 
-    fun createGameState(playersConnectors: Map<String, String>) {
+    fun createGameState(playersConnectors: Map<String, String>) { //toDo
         val numberOfPlayers: Int = playersConnectors.size
         val players: MutableMap<String, PlayerState> = mutableMapOf()
         val narratorAlias: String = playersConnectors.keys.first()
-        val gameStage: GameStage = GameStage.SYNCHRONISATION
+        val gameStage: GameStage = GameStage.SYNCHRONIZATION
         val handSize = 4
         var cardsTaken = 0
         val descriptionTime = 180
         val guessTime = 120
         for ((alias, connector) in playersConnectors) {
             val playerState = PlayerState(
-                connector = connector,
                 hand = mutableListOf(),
                 score = 0,
                 status = PlayerStatus.ALIVE,
                 cardToDescription = null,
                 guess = null,
+                finishedStage = false,
+                passedSynchronization = false,
             )
             for (i in 0..handSize)
                 playerState.hand.add(cardsTaken++)
             players[alias] = playerState
+
         }
         this.gameState = GameState(
             numberOfPlayers = numberOfPlayers,
@@ -41,32 +46,93 @@ object GameController {
             guessDeadline = null,
             guessTime = guessTime
         )
+        this.broadcastGameState()
     }
 
-    fun updateGameState(gameState: GameState, playerAlias: String) {
-        val curGameState: GameState = checkNotNull(this.gameState)
-        if (gameState.gameStage != GameStage.SYNCHRONISATION)
+    fun finishStage() {
+        val gameState: GameState = checkNotNull(this.gameState)
+        val gameLogic = GameLogic
+        when (gameState.gameStage) {
+            GameStage.SYNCHRONIZATION -> {
+                gameState.gameStage = GameStage.ASSOCIATION
+                for ((alias, playerState) in gameState.players) {
+                    playerState.status = PlayerStatus.SYNCHRONIZED
+                }
+                gameLogic.startRound()
+            }
+            GameStage.ASSOCIATION -> {
+                gameLogic.cardsToDescriptionReceived()
+            }
+            GameStage.GUESS -> {
+                gameState.gameStage = GameStage.ASSOCIATION
+                for ((alias, playerState) in gameState.players) {
+                    playerState.finishedStage = false
+                    playerState.passedSynchronization = false
+                    playerState.cardToDescription = null
+                    playerState.guess = null
+                    while (playerState.hand.size != gameState.handSize) {
+                        playerState.hand.add(gameState.cardsTaken++)
+                    }
+                }
+                //toDo refactor
+                var narratorFound = false
+                var narratorChanged = false
+                for ((alias, playerState) in gameState.players) {
+                    if (narratorFound) {
+                        gameState.narratorAlias = alias
+                        narratorChanged = true
+                        break
+                    }
+                    if (alias == gameState.narratorAlias) {
+                        narratorFound = true
+                    }
+                }
+                if (!narratorChanged) {
+                    gameState.narratorAlias = gameState.players.keys.first()
+                }
+                gameLogic.guessesReceived()
+                this.broadcastGameState()
+            }
+        }
+    }
+
+    fun receiveFinishStage(senderAlias: String) {
+        val gameState: GameState = checkNotNull(this.gameState)
+        gameState.players[senderAlias]!!.finishedStage = true
+        var stageFinished = true
+        for ((alias, playerState) in gameState.players) {
+            if (playerState.passedSynchronization == false) {
+                stageFinished = false;
+            }
+        }
+        if (stageFinished) {
+            this.finishStage()
+        }
+    }
+
+    fun updateGameState(gameState: GameState, senderAlias: String) {
+        val playerAlias: String = GameLogic.playerAlias
+        var curGameState: GameState = checkNotNull(this.gameState)
+        if (curGameState.gameStage != GameStage.SYNCHRONIZATION)
             throw Exception()
         check(
-            curGameState.players[playerAlias]!!.status == PlayerStatus.SYNCHRONIZED
-                    && curGameState != gameState
+            curGameState != gameState
+                    && curGameState.players[playerAlias]!!.status == PlayerStatus.SYNCHRONIZED
+                    && curGameState.players[senderAlias]!!.status == PlayerStatus.SYNCHRONIZED
         ) { "Desynchronization" }
-        if (this.gameState!!.players[playerAlias]!!.status != PlayerStatus.SYNCHRONIZED) {
-            this.gameState = gameState
-            this.gameState!!.players[playerAlias]!!.status = PlayerStatus.SYNCHRONIZED
-            this.gameState!!.gameStage = GameStage.ASSOCIATION
-            val gameLogic = GameLogic
-            gameLogic.startRound()
+        this.gameState = gameState
+        curGameState = checkNotNull(this.gameState)
+        curGameState.players[playerAlias]!!.passedSynchronization = true
+        curGameState.players[senderAlias]!!.passedSynchronization = true
+        var stageFinished = true
+        for ((alias, playerState) in gameState.players) {
+            if (playerState.passedSynchronization == false) {
+                stageFinished = false;
+            }
         }
-    }
-
-    fun reconnect(playerAlias: String, playerConnector: String) {
-        val gameState: GameState = checkNotNull(this.gameState)
-        check(gameState.players[playerAlias]!!.status == PlayerStatus.DEAD) {
-            "Only dead peer could reconnect"
+        if (stageFinished) {
+            this.broadcastFinishedStage(playerAlias)
         }
-        gameState.players[playerAlias]!!.connector = playerConnector
-        gameState.players[playerAlias]!!.status = PlayerStatus.ALIVE
     }
 
     fun updateNarratorDescription(
@@ -75,7 +141,7 @@ object GameController {
     ) {
         val gameState: GameState = checkNotNull(this.gameState)
         if (gameState.gameStage == GameStage.ASSOCIATION)
-            throw Exception() // toDo
+            throw Exception()
         gameState.narratorDescription = description
         gameState.players[gameState.narratorAlias]!!.cardToDescription = cardIndex
         val gameLogic = GameLogic
@@ -86,59 +152,69 @@ object GameController {
         userAlias: String,
         cardIndex: Int,
     ) {
+        val playerAlias: String = GameLogic.playerAlias
         val gameState: GameState = checkNotNull(this.gameState)
         if (gameState.gameStage == GameStage.ASSOCIATION)
-            throw Exception() // toDo
+            throw Exception()
         gameState.players[userAlias]!!.cardToDescription = cardIndex
-        var changeState: Boolean = true
+        var stageFinished = true
         for ((alias, playerState) in gameState.players) {
             if (playerState.cardToDescription == null) {
-                changeState = false;
+                stageFinished = false;
             }
         }
-        if (changeState) {
-            gameState.gameStage = GameStage.GUESS
-            val gameLogic = GameLogic
-            gameLogic.cardsToDescriptionReceived()
+        if (stageFinished) {
+            this.broadcastFinishedStage(playerAlias)
         }
     }
 
 
     fun updatePlayerGuess(
-        userAlias: String,
+        senderAlias: String,
         cardIndex: Int,
     ) {
+        val playerAlias: String = GameLogic.playerAlias
         val gameState: GameState = checkNotNull(this.gameState)
-        if (gameState.gameStage == GameStage.GUESS)
-            throw Exception() // toDo
-        gameState.players[userAlias]!!.guess = cardIndex
-        var changeState: Boolean = true
+        gameState.players[senderAlias]!!.guess = cardIndex
+        var stageFinished = true
         for ((alias, playerState) in gameState.players) {
             if (alias == gameState.narratorAlias)
                 continue
             if (playerState.guess == null) {
-                changeState = false;
+                stageFinished = false;
             }
         }
-        if (changeState) {
+        if (stageFinished) {
             this.calculateScores()
-            gameState.gameStage = GameStage.SYNCHRONISATION
-            val gameLogic = GameLogic
-            gameLogic.guessesReceived()
+            this.broadcastFinishedStage(playerAlias)
+        }
+    }
+
+    fun broadcastFinishedStage(
+        senderAlias: String,
+    ) {
+        val gameState: GameState = checkNotNull(this.gameState)
+        for ((playerAlias, playerState) in gameState.players) {
+            if (playerAlias == senderAlias || playerState.status == PlayerStatus.DEAD)
+                continue
+            //val clientService: ClientService = ClientService.getInstance(playerState.connector)
+            //clientService.sendGameState(gameState)
         }
     }
 
     fun broadcastGameState(
-        senderAlias: String,
     ) {
+        val playerAlias: String = GameLogic.playerAlias
         val gameState: GameState = checkNotNull(this.gameState)
-        if (gameState.gameStage != GameStage.SYNCHRONISATION)
-            throw Exception() // toDO
+        if (gameState.gameStage != GameStage.SYNCHRONIZATION)
+            throw Exception()
+        if (gameState.players[playerAlias]!!.status != PlayerStatus.SYNCHRONIZED)
+            throw Exception()
         for ((playerAlias, playerState) in gameState.players) {
-            if (playerAlias == senderAlias || playerState.status == PlayerStatus.DEAD)
+            if (playerAlias == playerAlias || playerState.status == PlayerStatus.DEAD)
                 continue
-            val clientService: ClientService = ClientService.getInstance(playerState.connector)
-            clientService.sendGameState(gameState)
+            //val clientService: ClientService = ClientService.getInstance(playerState.connector)
+            //clientService.sendGameState(gameState)
         }
     }
 
@@ -149,12 +225,13 @@ object GameController {
     ) {
         val gameState = checkNotNull(this.gameState)
         if (gameState.gameStage != GameStage.ASSOCIATION)
-            throw Exception() // toDO
+            throw Exception()
+        check(senderAlias == gameState.narratorAlias)
         for ((playerAlias, playerState) in gameState.players) {
-            if (playerAlias == senderAlias || playerState.status == PlayerStatus.DEAD)
+            if (playerAlias == senderAlias || playerState.status != PlayerStatus.SYNCHRONIZED)
                 continue
-            val clientService: ClientService = ClientService.getInstance(playerState.connector)
-            clientService.sendNarratorDescription(description, cardIndex)
+            //val clientService: ClientService = ClientService.getInstance(playerState.connector)
+            //clientService.sendNarratorDescription(description, cardIndex)
         }
     }
 
@@ -164,12 +241,13 @@ object GameController {
     ) {
         val gameState = checkNotNull(this.gameState)
         if (gameState.gameStage != GameStage.ASSOCIATION)
-            throw Exception() // toDO
+            throw Exception()
+        check(senderAlias != gameState.narratorAlias)
         for ((playerAlias, playerState) in gameState.players) {
-            if (playerAlias == senderAlias || playerState.status == PlayerStatus.DEAD)
+            if (playerAlias == senderAlias || playerState.status != PlayerStatus.SYNCHRONIZED)
                 continue
-            val clientService: ClientService = ClientService.getInstance(playerState.connector)
-            clientService.sendCardToDescription(senderAlias, cardIndex)
+            //val clientService: ClientService = ClientService.getInstance(playerState.connector)
+            //clientService.sendCardToDescription(senderAlias, cardIndex)
         }
     }
 
@@ -179,12 +257,12 @@ object GameController {
     ) {
         val gameState = checkNotNull(this.gameState)
         if (gameState.gameStage != GameStage.GUESS)
-            throw Exception() // toDO
+            throw Exception()
         for ((playerAlias, playerState) in gameState.players) {
-            if (playerAlias == senderAlias || playerState.status == PlayerStatus.DEAD)
+            if (playerAlias == senderAlias || playerState.status != PlayerStatus.SYNCHRONIZED)
                 continue
-            val clientService: ClientService = ClientService.getInstance(playerState.connector)
-            clientService.sendGuess(senderAlias, cardIndex)
+            //val clientService: ClientService = ClientService.getInstance(playerState.connector)
+            //clientService.sendGuess(senderAlias, cardIndex)
         }
     }
 
